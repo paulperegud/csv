@@ -1,0 +1,15 @@
+{application, csv,
+ [
+  {description, "An Erlang csv library"},
+  {vsn, "1.0.0"},
+  {modules, [
+             csv,
+	     csv_util
+            ]},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {env, []}
+ ]}.
