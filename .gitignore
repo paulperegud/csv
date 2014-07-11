@@ -12,7 +12,6 @@ priv/set-*.txt
 ebin/
 Makefile
 autom4te.cache/
-*.config
 config.h
 eunit
 init.erlang
