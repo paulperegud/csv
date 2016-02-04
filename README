@@ -3,7 +3,7 @@ CSV-file parser
 
 Copyright (C) 2012, Dmitry Kolesnikov
 
-   This file is free documentation; unlimited permisions are give to copy, 
+   This file is free documentation; unlimited permissions are give to copy,
 distribute and modify the documentation. 
 
 
@@ -33,41 +33,22 @@ Introduction
                    Event Line 
 
     The parser takes as input binary stream, event handler function and
-    initial state/accumulator. Event function is evaluated agains current 
-    accumulator and parsed line of csv-file. Note: The accumaltor allows to
-    carry-on application specific state throught event functions.
+    initial state/accumulator. Event function is evaluated against current
+    accumulator and parsed line of csv-file. Note: The accumulator allows to
+    carry-on application specific state through event functions.
 
 Compile and build
 =================
 
-   The library source code is available at git repository
+   rebar compile
 
-   git clone https://github.com/fogfish/pts.git
-   
-   Briefly, the shell command `./configure; make; make install' should 
-configure, build, and assembly distribution package. The following
-instructions are specific to this package; see the `INSTALL' file for
-instructions specific to GNU build tools. 
-
-   The `configure' shell script attempts to guess dependencies and system 
-configuration required to build library, the following build time dependencies exists:
-
-   --with-erlang={prefix_to_otp} supplied to `./configure' binds the library
-                                 with chosen Erlang runtime, if you have
-                                 multiple Erlang environments available at 
-                                 build machine 
-                                 
-   High performance version of library shall be build with native targets
-   
-   make BUILD=native
-   
 Interface
 =========   
    Briefly, the sequence of operations for data parse/intake is following; 
    see the src/csv.erl file for detailed interface specification and/or 
    example parser at priv/csv_example.erl
    
-   %% define an event funtion that takes two arguments line value and
+   %% define an event function that takes two arguments line value and
    %% accumulator. The function shall return a new accumulator state.
    %% The structure of accumulator is an application specific, that might
    %% vary from integer to comprex record.
@@ -83,7 +64,7 @@ Interface
    %%
    %% a parallel parse splits the CSV into multiple chunks;
    %% spawns multiple processes (process per chunk)
-   %% results agregated in the client process.
+   %% results aggregated in the client process.
    csv:parse(CSV, 20, Fun, #myrecord{})
    
 Performance
@@ -96,7 +77,7 @@ Performance
      * L3 Cache 6MB
      * Memory 4GB 1333 MHZ DDR3
      * Disk 750GB 7200rpm WDC WD7500BTKT-40MD3T0
-     * erlang R15B + native build of the library   
+     * Erlang R15B + native build of the library
    
    The data set is has following patterns: key, date, time, float numbers and 
    zz suffix
@@ -141,5 +122,3 @@ Performance
    300K,  8 flds     23.41       91.722     592.886         1.98
    300K, 24 flds     50.42      489.303    1190.745         3.97
    300K, 40 flds     77.43      780.296    1734.898         5.78
-     
-     
