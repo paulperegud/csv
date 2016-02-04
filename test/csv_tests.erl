@@ -22,7 +22,7 @@
 
 
 parse_test() ->
-   Fun = fun({line, X}, A) -> [lists:reverse(X) | A] end,
+   Fun = fun({line, X}, A) -> [lists:reverse(X) | A]; (_, A) -> A end,
    Acc = csv:parse(?CSV, Fun, []),
    ?assert(lists:member([<<"a">>, <<"b">>, <<"c">>], Acc)),
    ?assert(lists:member([<<"1">>, <<"2">>, <<"3">>], Acc)),
@@ -30,17 +30,16 @@ parse_test() ->
    ?assert(lists:member([<<"4">>, <<"5">>, <<"6">>], Acc)).
    
 parse_quoted_test() ->
-   Fun = fun({line, X}, A) -> [lists:reverse(X) | A] end,
+   Fun = fun({line, X}, A) -> [lists:reverse(X) | A]; (_, A) -> A end,
    Acc = csv:parse(?QCSV, Fun, []),
    error_logger:error_report([{a, Acc}]),
    ?assert(lists:member([<<"a">>, <<"b">>, <<"c">>], Acc)),
    ?assert(lists:member([<<"1">>, <<"2">>, <<"3">>], Acc)).
    
 pparse_test() ->
-   Fun = fun({line, X}, A) -> [lists:reverse(X) | A] end,
+   Fun = fun({line, X}, A) -> [lists:reverse(X) | A]; (_, A) -> A end,
    Acc = csv:pparse(?CSV, 3, Fun, []),
    ?assert(lists:member([<<"a">>, <<"b">>, <<"c">>], Acc)),
    ?assert(lists:member([<<"1">>, <<"2">>, <<"3">>], Acc)),
    ?assert(lists:member([<<"d">>, <<"e">>, <<"f">>], Acc)),
    ?assert(lists:member([<<"4">>, <<"5">>, <<"6">>], Acc)).
-   
