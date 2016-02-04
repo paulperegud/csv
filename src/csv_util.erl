@@ -24,4 +24,5 @@
 %%
 import({line, Line}, {ets, Id} = Acc) ->
    ets:insert(Id, list_to_tuple(lists:reverse(Line))),
-   Acc.
+   Acc;
+import(_, Acc) -> Acc.
