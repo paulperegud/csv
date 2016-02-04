@@ -40,27 +40,8 @@ Introduction
 Compile and build
 =================
 
-   The library source code is available at git repository
+   rebar compile
 
-   git clone https://github.com/fogfish/pts.git
-   
-   Briefly, the shell command `./configure; make; make install' should 
-configure, build, and assembly distribution package. The following
-instructions are specific to this package; see the `INSTALL' file for
-instructions specific to GNU build tools. 
-
-   The `configure' shell script attempts to guess dependencies and system 
-configuration required to build library, the following build time dependencies exists:
-
-   --with-erlang={prefix_to_otp} supplied to `./configure' binds the library
-                                 with chosen Erlang runtime, if you have
-                                 multiple Erlang environments available at 
-                                 build machine 
-                                 
-   High performance version of library shall be build with native targets
-   
-   make BUILD=native
-   
 Interface
 =========   
    Briefly, the sequence of operations for data parse/intake is following; 
