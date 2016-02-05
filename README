@@ -64,7 +64,8 @@ Interface
    %% vary from integer to comprex record.
    Fun = fun({line, L}, #my_record{count = C} = Acc0) ->
       do_my_intake_to_somewhere(lists:reverse(L)),
-      Acc0#my_record{count = C + 1}
+      Acc0#my_record{count = C + 1};
+            (_, Acc) -> Acc
    end
    
    %%
