@@ -76,6 +76,8 @@ parse(In, Pos, Len, Line, Fun, Acc0) when Pos + Len < size(In) ->
          % no match increase token
          parse(In, Pos, Len + 1, Line, Fun, Acc0)
    end;
+parse(_In, _Pos, 0, _Line, Fun, Acc0) ->
+    Fun(eof, Acc0);
 parse(In, Pos, Len, Line, Fun, Acc0) ->
    <<_:Pos/binary, Tkn:Len/binary, _/binary>> = In,
    Fun(eof, Fun({line, [Tkn | Line]}, Acc0)).

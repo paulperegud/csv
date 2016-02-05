@@ -33,7 +33,7 @@ run(N) ->
 %% parser event function does not do anything else, except line counting
 extract(Filename, N) ->
    %% event function, line counter
-   Evt = fun({line, _Line}, X) -> X + 1 end,
+   Evt = fun({line, _Line}, X) -> X + 1; (_, X) -> X end,
    {Tread, {ok, Bin}} = timer:tc(file, read_file, [Filename]),
    {Textr, R}         = timer:tc(csv, pparse, [Bin, N, Evt, 0]),
    L  = lists:foldl(fun(X, A) -> A + X end, 0, R),
@@ -52,7 +52,7 @@ extract(Filename, N) ->
 %% parser event function calculates a rolling hash of each parsed line
 transform_hash(Filename, N) ->
    %% event function, line counter
-   Evt = fun({line, Line}, X) -> erlang:phash2({X, Line}) end,
+   Evt = fun({line, Line}, X) -> erlang:phash2({X, Line}); (_, X) -> X end,
    {Tread, {ok, Bin}} = timer:tc(file, read_file, [Filename]),
    {Textr, R}         = timer:tc(csv, pparse, [Bin, N, Evt, 0]),
    H  = lists:foldl(fun(X, A) -> erlang:phash2({A, X}) end, 0, R),
@@ -72,8 +72,9 @@ transform_hash(Filename, N) ->
 transform_tuple(Filename, N) ->
    %% event function, line counter
    Evt = fun({line, Line}, X) -> 
-      T = list_to_tuple(lists:reverse(Line)),
-      X + 1 
+      _ = list_to_tuple(lists:reverse(Line)),
+      X + 1;
+            (_, X) -> X
    end,
    {Tread, {ok, Bin}} = timer:tc(file, read_file, [Filename]),
    {Textr, R}         = timer:tc(csv, pparse, [Bin, N, Evt, 0]),
@@ -94,7 +95,7 @@ load_ets(Filename, N) ->
    T = list_to_atom(Filename),
    ets:new(T, [public, named_table, {write_concurrency, true}]),
    {Tread, {ok, Bin}} = timer:tc(file, read_file, [Filename]),
-   {Textr, R}         = timer:tc(csv, pparse, [
+   {Textr, _}         = timer:tc(csv, pparse, [
       Bin, N, fun csv_util:import/2, {ets, T}
    ]),
    error_logger:info_report([
@@ -125,7 +126,8 @@ load_pts(Filename, N) ->
       Key = (erlang:phash2(erlang:element(1, T)) rem (N - 1)) + 1,
       %io:format('~p~n', [Key]),
       erlang:send(erlang:element(Key, Pts), {put, T}),
-      X + 1 
+      X + 1;
+            (_, X) -> X
    end,
    {Tread, {ok, Bin}} = timer:tc(file, read_file, [Filename]),
    {Textr, R}         = timer:tc(csv, pparse, [Bin, N, Evt, 0]),
@@ -150,4 +152,3 @@ pts(S) ->
       {get, P} -> P ! S, pts(S);
       shutdown -> ok
    end.
-   
