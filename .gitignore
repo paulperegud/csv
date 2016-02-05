@@ -10,9 +10,6 @@
 *.gnuweb
 priv/set-*.txt
 ebin/
-Makefile
-autom4te.cache/
-config.h
 eunit
 init.erlang
-stamp-h1
+.*.sw?
