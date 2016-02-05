@@ -40,7 +40,17 @@ Introduction
 Compile and build
 =================
 
-   rebar compile
+    For compilation use
+
+    make
+
+    If you would like to compile native compiled version use
+
+    make BUILD=native
+
+    If you previously compiled normal version don't forget clean first or use
+
+    make clean compile BUILD=native
 
 Interface
 =========   

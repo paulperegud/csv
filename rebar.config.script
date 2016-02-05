@@ -1,0 +1,7 @@
+case os:getenv("BUILD") of
+    "native" ->
+        OPTS = [native | case lists:keyfind(erl_opts, 1, CONFIG) of
+                             {_, X} -> X; false -> [] end],
+        lists:keystore(erl_opts, 1, CONFIG, {erl_opts, OPTS});
+    _ -> CONFIG
+end.
