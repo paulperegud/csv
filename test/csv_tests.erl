@@ -66,13 +66,22 @@ parse(CSV) ->
 pparse(CSV) ->
     csv:pparse(CSV, 3, fun test_handler/2, []).
 
+trim_nl(Bin) ->
+    Size = byte_size(Bin) - 1,
+    case Bin of
+        <<Res:Size/binary, $\n>> -> Res;
+        _ -> Bin
+    end.
+
 test_cases() ->
     Data   = test_data(),
     Expect = data_to_result(Data),
     CSV = data_to_csv(Data),
     QCSV = data_to_csv(Data, fun quote/1),
     [  {"simple", CSV, Expect}
+     , {"simple trim nl", trim_nl(CSV), Expect}
      , {"quoted", QCSV, Expect}
+     , {"quoted trim nl", trim_nl(QCSV), Expect}
     ].
 
 parse_test_() ->
