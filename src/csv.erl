@@ -84,7 +84,7 @@ parse(In, Pos, Len, Line, Fun, Acc0) ->
   
 parse_quoted(In, Pos, Len, Line, Fun, Acc0) ->
    case In of
-      <<_:Pos/binary, Tkn:Len/binary, ?QUOTE, ?QUOTE, _/binary>> ->
+      <<_:Pos/binary, _Tkn:Len/binary, ?QUOTE, ?QUOTE, _/binary>> ->
          parse_quoted(In, Pos, Len + 2, Line, Fun, Acc0);
       <<_:Pos/binary, Tkn:Len/binary, ?QUOTE, ?FIELD_BY, _/binary>> ->
          % field match
@@ -93,6 +93,9 @@ parse_quoted(In, Pos, Len, Line, Fun, Acc0) ->
          % field match
          parse(In, Pos + Len + 2, 0, [], Fun, 
                Fun({line, [unescape(Tkn) | Line]}, Acc0));   
+      <<_:Pos/binary, Tkn:Len/binary, ?QUOTE>> ->
+         % field match
+               Fun(eof, Fun({line, [unescape(Tkn) | Line]}, Acc0));
       _ ->   
          parse_quoted(In, Pos, Len + 1, Line, Fun, Acc0)
    end.   
