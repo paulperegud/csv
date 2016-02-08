@@ -17,29 +17,68 @@
 -author("Dmitry Kolesnikov <dmkolesnikov@gmail.com>").
 -include_lib("eunit/include/eunit.hrl").
 
--define(CSV, <<"a,b,c\n1,2,3\nd,e,f\n4,5,6\n">>).
--define(QCSV, <<"\"a\",\"b\",\"c\"\n\"1\",\"2\",\"3\"\n">>).
+test_data() -> [[a, b, c], [1, 2, 3], [d, e, f], [4, 5, 6]].
 
+to_iolist(A) when is_atom(A) ->
+    atom_to_binary(A, latin1);
+to_iolist(I) when is_integer(I) ->
+    integer_to_binary(I);
+to_iolist(F) when is_float(F) ->
+    float_to_binary(F);
+to_iolist(X) when is_list(X); is_binary(X) -> X.
 
-parse_test() ->
-   Fun = fun({line, X}, A) -> [lists:reverse(X) | A]; (_, A) -> A end,
-   Acc = csv:parse(?CSV, Fun, []),
-   ?assert(lists:member([<<"a">>, <<"b">>, <<"c">>], Acc)),
-   ?assert(lists:member([<<"1">>, <<"2">>, <<"3">>], Acc)),
-   ?assert(lists:member([<<"d">>, <<"e">>, <<"f">>], Acc)),
-   ?assert(lists:member([<<"4">>, <<"5">>, <<"6">>], Acc)).
-   
-parse_quoted_test() ->
-   Fun = fun({line, X}, A) -> [lists:reverse(X) | A]; (_, A) -> A end,
-   Acc = csv:parse(?QCSV, Fun, []),
-   error_logger:error_report([{a, Acc}]),
-   ?assert(lists:member([<<"a">>, <<"b">>, <<"c">>], Acc)),
-   ?assert(lists:member([<<"1">>, <<"2">>, <<"3">>], Acc)).
-   
-pparse_test() ->
-   Fun = fun({line, X}, A) -> [lists:reverse(X) | A]; (_, A) -> A end,
-   Acc = csv:pparse(?CSV, 3, Fun, []),
-   ?assert(lists:member([<<"a">>, <<"b">>, <<"c">>], Acc)),
-   ?assert(lists:member([<<"1">>, <<"2">>, <<"3">>], Acc)),
-   ?assert(lists:member([<<"d">>, <<"e">>, <<"f">>], Acc)),
-   ?assert(lists:member([<<"4">>, <<"5">>, <<"6">>], Acc)).
+to_bin(X) -> iolist_to_binary(to_iolist(X)).
+
+quote(X) ->
+    [$", to_iolist(X), $"].
+
+nl() -> "\n".
+
+fs() -> ",".
+
+data_to_csv(Data) ->
+    data_to_csv(Data, fun to_iolist/1).
+
+data_to_csv(Data, F) ->
+    data_to_csv(Data, F, nl()).
+
+data_to_csv(Data, F, LS) ->
+    data_to_csv(Data, F, fs(), LS).
+
+data_to_csv(Data, F, FS, LS) ->
+    iolist_to_binary([[line_to_csv(X, F, FS), LS] || X <- Data]).
+
+line_to_csv([H|T], F, FS) ->
+    [F(H) | [[FS|F(X)] || X <- T]].
+
+data_to_result(Data) ->
+    [[to_bin(X) || X <- L] || L <- Data].
+
+test_handler({line, L}, Acc) ->
+    [lists:reverse(L) | Acc];
+test_handler(eof, Acc) ->
+    lists:reverse(Acc);
+test_handler(_, Acc) -> Acc.
+
+parse(CSV) ->
+    csv:parse(CSV, fun test_handler/2, []).
+
+pparse(CSV) ->
+    csv:pparse(CSV, 3, fun test_handler/2, []).
+
+test_cases() ->
+    Data   = test_data(),
+    Expect = data_to_result(Data),
+    CSV = data_to_csv(Data),
+    QCSV = data_to_csv(Data, fun quote/1),
+    [  {"simple", CSV, Expect}
+     , {"quoted", QCSV, Expect}
+    ].
+
+parse_test_() ->
+    [ {N, ?_assertEqual(Expect, parse(CSV))}
+      || {N, CSV, Expect} <- test_cases() ].
+
+pparse_test_() ->
+    [ {N, ?_assertEqual(Expect, pparse(CSV))}
+      || {N, CSV, Expect} <- test_cases() ].
