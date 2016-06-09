@@ -39,7 +39,7 @@
 -export([parse/3, split/4, pparse/4]).
 
 %%
--define(FIELD_BY,  $,).
+-define(FIELD_BY,  $|).
 -define(LINE_BY,   $\n).
 
 %%
