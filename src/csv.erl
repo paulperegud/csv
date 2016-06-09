@@ -30,7 +30,7 @@
 %%                   Event Line 
 %%
 %%    The parser takes as input binary stream, event handler function and
-%%    initial state/accumulator. Event function is evaluated agains current 
+%%    initial state/accumulator. Event function is evaluated agains current
 %%    accumulator and parsed line of csv-file. Note: The accumaltor allows to
 %%    carry-on application specific state throught event functions.
 %%
@@ -39,8 +39,6 @@
 -export([parse/3, split/4, pparse/4]).
 
 %%
-%%
--define(QUOTE,     $").
 -define(FIELD_BY,  $,).
 -define(LINE_BY,   $\n).
 
@@ -59,21 +57,18 @@ parse(In, Fun, Acc0) ->
 
 parse(In, Pos, Len, Line, Fun, Acc0) when Pos + Len < size(In) ->
    case In of
-      <<_:Pos/binary, _Tkn:Len/binary, ?QUOTE, _/binary>> ->
-                                                % start field
-         parse_quoted(In, Pos + Len + 1, 0, Line, Fun, Acc0);
       <<_:Pos/binary, Tkn:Len/binary, ?FIELD_BY,  _/binary>> ->
-                                                % field match
+         %% field match
          parse(In, Pos + Len + 1, 0, [Tkn | Line], Fun, Acc0);
       <<_:Pos/binary, Tkn:Len/binary, ?LINE_BY>> ->
-                                                % last line match
+         %% last line match
          Fun(eof, Fun({line, [Tkn | Line]}, Acc0));
       <<_:Pos/binary, Tkn:Len/binary, ?LINE_BY, _/binary>>  ->
-                                                % line match
-         parse(In, Pos + Len + 1, 0, [], 
+         %% line match
+         parse(In, Pos + Len + 1, 0, [],
                Fun, Fun({line, [Tkn | Line]}, Acc0));
       _ ->
-                                                % no match increase token
+         %% no match increase token
          parse(In, Pos, Len + 1, Line, Fun, Acc0)
    end;
 parse(_In, _Pos, 0, _Line, Fun, Acc0) ->
@@ -81,40 +76,6 @@ parse(_In, _Pos, 0, _Line, Fun, Acc0) ->
 parse(In, Pos, Len, Line, Fun, Acc0) ->
    <<_:Pos/binary, Tkn:Len/binary, _/binary>> = In,
    Fun(eof, Fun({line, [Tkn | Line]}, Acc0)).
-
-parse_quoted(In, Pos, Len, Line, Fun, Acc0) ->
-   case In of
-      <<_:Pos/binary, _Tkn:Len/binary, ?QUOTE, ?QUOTE, _/binary>> ->
-         parse_quoted(In, Pos, Len + 2, Line, Fun, Acc0);
-      <<_:Pos/binary, Tkn:Len/binary, ?QUOTE, ?FIELD_BY, _/binary>> ->
-                                                % field match
-         parse(In, Pos + Len + 2, 0, [unescape(Tkn) | Line], Fun, Acc0);
-      <<_:Pos/binary, Tkn:Len/binary, ?QUOTE, ?LINE_BY, _/binary>> ->
-                                                % field match
-         parse(In, Pos + Len + 2, 0, [], Fun,
-               Fun({line, [unescape(Tkn) | Line]}, Acc0));
-      <<_:Pos/binary, Tkn:Len/binary, ?QUOTE>> ->
-                                                % field match
-         Fun(eof, Fun({line, [unescape(Tkn) | Line]}, Acc0));
-      _ ->
-         parse_quoted(In, Pos, Len + 1, Line, Fun, Acc0)
-   end.
-
-%%
-%% unescape
-unescape(In) ->
-   unescape(In, 0, 0, <<>>).
-
-unescape(In, I, Len, Acc) when I + Len < size(In) ->
-   case In of
-      <<_:I/binary, Tkn:Len/binary, ?QUOTE, ?QUOTE, _/binary>> ->
-         unescape(In, I + Len + 2, 0, <<Acc/binary, Tkn/binary, ?QUOTE>>);
-      _ ->
-         unescape(In, I, Len + 1, Acc)
-   end;
-unescape(In, I, Len, Acc) ->
-   <<_:I/binary, Tkn:Len/binary>> = In,
-   <<Acc/binary, Tkn/binary>>.
 
 %%
 %% split(In, Count, Fun, Acc0) -> Acc0
@@ -136,7 +97,7 @@ split(In, Pos, Size, Size0, Fun, Acc0) when Pos + Size < size(In) ->
       <<_:Pos/binary, Shard:Size/binary, ?LINE_BY>> ->
          Fun({shard, Shard}, Acc0);
       <<_:Pos/binary, Shard:Size/binary, ?LINE_BY, _/binary>> ->
-         split(In, Pos + Size + 1, Size0,    Size0, Fun, 
+         split(In, Pos + Size + 1, Size0, Size0, Fun,
                Fun({shard, Shard}, Acc0)
               );
       _ ->
