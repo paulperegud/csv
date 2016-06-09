@@ -91,14 +91,14 @@ parse_quoted(In, Pos, Len, Line, Fun, Acc0) ->
          parse(In, Pos + Len + 2, 0, [unescape(Tkn) | Line], Fun, Acc0);
       <<_:Pos/binary, Tkn:Len/binary, ?QUOTE, ?LINE_BY, _/binary>> ->
                                                 % field match
-         parse(In, Pos + Len + 2, 0, [], Fun, 
-               Fun({line, [unescape(Tkn) | Line]}, Acc0));   
+         parse(In, Pos + Len + 2, 0, [], Fun,
+               Fun({line, [unescape(Tkn) | Line]}, Acc0));
       <<_:Pos/binary, Tkn:Len/binary, ?QUOTE>> ->
                                                 % field match
          Fun(eof, Fun({line, [unescape(Tkn) | Line]}, Acc0));
-      _ ->   
+      _ ->
          parse_quoted(In, Pos, Len + 1, Line, Fun, Acc0)
-   end.   
+   end.
 
 %%
 %% unescape
@@ -114,16 +114,16 @@ unescape(In, I, Len, Acc) when I + Len < size(In) ->
    end;
 unescape(In, I, Len, Acc) ->
    <<_:I/binary, Tkn:Len/binary>> = In,
-   <<Acc/binary, Tkn/binary>>.      
+   <<Acc/binary, Tkn/binary>>.
 
 %%
 %% split(In, Count, Fun, Acc0) -> Acc0
 %%    In    = binary(), input csv data to split
 %%    Count = integer(), number of shard to produce
-%%    Fun = fun({shard, Shard}, Acc0) -> Acc, 
+%%    Fun = fun({shard, Shard}, Acc0) -> Acc,
 %%       Shard  - binary() chunk of csv data
-%%    Acc0 = term() application specific state/term carried throught
-%%                  parser event hadlers
+%%    Acc0 = term() application specific state/term carried through
+%%                  parser event handlers
 %%
 %% split csv file on chunks
 %%
@@ -150,7 +150,7 @@ split(In, Pos, _Size, _Size0, Fun, Acc0) ->
 %% pparse(In, Count, Fun, App) -> NApp
 %%   In    = binary(), input csv data to parse
 %%   Count = integers(), defines a number of worker processes
-%%   Fun   = fun({line, Line}, Acc0) -> Acc, 
+%%   Fun   = fun({line, Line}, Acc0) -> Acc,
 %%      Line  - list() list of parsed fields in reverse order
 %%   Acc0 = term() application specific state/term carried throught
 %%                 parser event hadlers
@@ -158,12 +158,11 @@ split(In, Pos, _Size, _Size0, Fun, Acc0) ->
 %% parallel parse csv file, the function shards the input csv data and
 %% parses each chunk in own process.
 %%
-pparse(In, Count, Fun, Acc0) ->   
+pparse(In, Count, Fun, Acc0) ->
    Wrk = fun({shard, Shard}, Id) ->
                Pid = self(),
                spawn(
                  fun() ->
-
                        R = parse(Shard, Fun, Fun({shard, Shard}, Acc0)),
                        Pid ! {shard, Id, R}
                  end
@@ -173,9 +172,8 @@ pparse(In, Count, Fun, Acc0) ->
    N = split(In, Count, Wrk, 1),
    join(lists:seq(1,N - 1), []).
 
-
 join([H | T], Acc) ->
-   receive 
+   receive
       {shard, H, R} when is_list(R) -> join(T, Acc ++ R);
       {shard, H, R} -> join(T, [R|Acc])
    end;
